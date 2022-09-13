@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 //~
 // Scanner
@@ -37,23 +38,28 @@ typedef struct {
     int intValue; // ?
 } Token;
 
-#if 0
 typedef enum {
-    SyntaxKind_NumberKeyword = 0
-} SyntaxKind;
+    A_ADD,
+    A_SUBTRACT,
+    A_MULTIPLY,
+    A_DIVIDE,
+    A_INTLIT,
+} ASTNodeType;
 
-typedef struct {
-    SyntaxKind type;
-} Ast_FunctionDeclaration;
+typedef struct ASTNode ASTNode;
 
-typedef struct {
-    Ast_FunctionDeclaration statement;
-} Ast_SourceFile;
-#endif
+struct ASTNode {
+    ASTNodeType op;
+    ASTNode* left;
+    ASTNode* right;
+    int intValue;
+};
 
-//const char src[] = "function main(): number { return 0; }";
+static Token g_Token;
 
 #include "scan.c"
+#include "expression.c"
+#include "tree.c"
 
 #define MAX_TOKENS 256
 int tokensIndex = 0;
@@ -108,6 +114,7 @@ int main() {
     char *tokstr[] = { "+", "-", "*", "/", "intlit" };
     Token t;
     
+#if 0
     while(scan(&t)) {
         printf("Token: %s", tokstr[t.type]);
         if (t.type == T_INTLIT) {
@@ -115,6 +122,14 @@ int main() {
         }
         printf("\n");
     }
+#endif
+    
+    ASTNode* node;
+    
+    scan(&g_Token);                 // Get the first token from the input
+    node = binaryExpression();                // Parse the expression in the file
+    printf("%d\n", interpretAST(node));      // Calculate the final result
+    exit(0);
     
 #if 0
     int index = 0;
@@ -126,8 +141,8 @@ int main() {
         }
         
         if (c >= '0' && c <= '9') {
-            int begin = index;
-            while (c >= '0' && c <= '0') {
+            int begin = index;``
+                while (c >= '0' && c <= '0') {
                 printf("%c", c);
                 c = src[++index];
             }

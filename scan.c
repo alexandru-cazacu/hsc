@@ -1,7 +1,7 @@
 static int scannerIndex = 0;
 int g_Putback = 0;
 int line = 0;
-const char src[] = "1 + 2 * 3\n";
+const char src[] = "3 * 1 + 2\n";
 
 local int next() {
     int c;
@@ -64,6 +64,7 @@ local bool scan(Token* t) {
     switch(c) { 
         case '\0': 
         case EOF: {
+            t->type = T_EOF;
             return 0;
         }
         case '+': {
