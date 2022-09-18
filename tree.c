@@ -25,7 +25,7 @@ ASTNode* primary(void) {
     switch(g_Token.type) {
         case T_INTLIT: {
             node = makeASTLeaf(A_INTLIT, g_Token.intValue);
-            scan(&g_Token);
+            scanToken(&g_Token);
             return node;
         }
         default: {
@@ -49,7 +49,7 @@ ASTNode* binaryExpression(void) {
     
     nodeType = arithOp(g_Token.type);
     
-    scan(&g_Token);
+    scanToken(&g_Token);
     
     right = binaryExpression();
     

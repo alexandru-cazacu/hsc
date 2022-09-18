@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <ctype.h> // isdigit()
 
 #include "scan.h"
 
@@ -29,24 +30,32 @@ static Token g_Token;
 #include "tree.c"
 
 int main() {
-    char *tokstr[] = { "+", "-", "*", "/", "T_INTLIT" };
     Token t;
     
     ASTNode* node;
     
-    g_Scanner.src = "3 * 1 + 2;\n";
+    const char* src = "let a = 5; // This is a comment \n for() (); == 567!= >= <= +\"asd\";";
+    g_Scanner.source.data = src;
+    g_Scanner.source.length = strlen(src);
     //g_Scanner.src = "let a = 5\n";
     
-    while(scan(&t)) {
-        printf("Token: %s", tokstr[t.type]);
-        if (t.type == T_INTLIT) {
-            printf(", value %d", t.intValue);
+    while(true) {
+        int res = scanToken(&t);
+        if (res == 1) {
+            printToken(&t);
+        } else if (res == -1) {
+            continue;
+        } else {
+            break;
         }
-        printf("\n");
     }
     
-    printf("Token %d, value: %d\n", g_Token.type, g_Token.intValue);
-    //scan(&g_Token);
+    if (g_Scanner.hasError) {
+        return 65;
+    }
+    
+    //printf("Token %d, value: %d\n", g_Token.type, g_Token.intValue);
+    //scanToken(&g_Token);
     //node = binaryExpression();
     //printf("%d\n", interpretAST(node));
     
