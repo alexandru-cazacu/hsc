@@ -1,30 +1,29 @@
-static int scannerIndex = 0;
-int g_Putback = 0;
-int line = 0;
-const char src[] = "3 * 1 + 2\n";
+#include "scan.h"
 
-local int next() {
+static Scanner g_Scanner;
+
+static int next() {
     int c;
     
-    if (g_Putback) {
-        c = g_Putback;
-        g_Putback = 0;
+    if (g_Scanner.putback) {
+        c = g_Scanner.putback;
+        g_Scanner.putback = 0;
         return c;
     }
     
-    c = src[scannerIndex++];
+    c = g_Scanner.src[g_Scanner.index++];
     if ('\n' == c) {
-        line++;
+        g_Scanner.line++;
     }
     
     return c;
 }
 
-local void putback(int c) {
-    g_Putback = c;
+static void putback(int c) {
+    g_Scanner.putback = c;
 }
 
-local int skip() {
+static int skip() {
     int c;
     
     c = next();
@@ -35,14 +34,14 @@ local int skip() {
     return c;
 }
 
-local int chrpos(char *s, int c) {
+static int chrpos(char *s, int c) {
     char *p;
     
     p = strchr(s, c);
     return (p ? p - s : -1);
 }
 
-local int scanInt(int c) {
+static int scanInt(int c) {
     int k = 0;
     int val = 0;
     
@@ -56,7 +55,7 @@ local int scanInt(int c) {
     return val;
 }
 
-local bool scan(Token* t) {
+static bool scan(Token* t) {
     int c;
     
     c = skip();
@@ -86,7 +85,7 @@ local bool scan(Token* t) {
                 break;
             }
             
-            printf("Unrecognised character %c on line: %d\n", c, line);
+            printf("Unrecognised character %c on line: %d\n", c, g_Scanner.line);
             exit(1);
         }
     }

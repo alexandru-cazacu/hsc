@@ -29,7 +29,7 @@ ASTNode* primary(void) {
             return node;
         }
         default: {
-            fprintf(stderr, "Syntax error on line %d\n", line);
+            fprintf(stderr, "Syntax error on line %d\n", g_Scanner.line);
             exit(1);
         }
     }

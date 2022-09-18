@@ -5,7 +5,7 @@ ASTNodeType arithOp(TokenType t) {
         case T_STAR: return A_MULTIPLY;
         case T_SLASH: return A_DIVIDE;
         default: {
-            fprintf(stderr, "Unknown token in arithop() on line %d\n", line);
+            fprintf(stderr, "Unknown token in arithop() on line %d\n", g_Scanner.line);
             exit(1);
         }
     }
