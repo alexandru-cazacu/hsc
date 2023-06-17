@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -28,16 +29,21 @@ static Token g_Token;
 #include "scan.c"
 #include "expression.c"
 #include "tree.c"
+#include "vm.c"
+#include "memory.c"
+#include "debug.c"
 
 int main() {
     Token t;
     
     ASTNode* node;
     
-    const char* src = "let a = 5; // This is a comment \n for() (); == 567!= >= <= +\"asd\";";
+    const char* src =
+        "let a = 5;"
+        " // This is a comment  \n"
+        " for() (); == 567!= >= <= +\"asd\";";
     g_Scanner.source.data = src;
     g_Scanner.source.length = strlen(src);
-    //g_Scanner.src = "let a = 5\n";
     
     while(true) {
         int res = scanToken(&t);
@@ -58,6 +64,16 @@ int main() {
     //scanToken(&g_Token);
     //node = binaryExpression();
     //printf("%d\n", interpretAST(node));
+    
+    size_t line = 42;
+    Chunk chunk = {0};
+    initChunk(&chunk);
+    uint8_t constantIdx = addConstant(&chunk, 1.2);
+    writeChunk(&chunk, OP_CONSTANT, line);
+    writeChunk(&chunk, constantIdx, line);
+    writeChunk(&chunk, OP_RETURN, line);
+    disassembleChunk(&chunk, "test chunk");
+    freeChunk(&chunk);
     
     return 0;
 }
