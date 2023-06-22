@@ -32,6 +32,8 @@ static Token g_Token;
 #include "vm.c"
 #include "memory.c"
 #include "debug.c"
+#include "chunk.c"
+#include "value.c"
 
 int main() {
     Token t;
