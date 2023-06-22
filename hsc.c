@@ -67,6 +67,8 @@ int main() {
     //node = binaryExpression();
     //printf("%d\n", interpretAST(node));
     
+    initVM();
+    
     size_t line = 42;
     Chunk chunk = {0};
     initChunk(&chunk);
@@ -75,7 +77,9 @@ int main() {
     writeChunk(&chunk, constantIdx, line);
     writeChunk(&chunk, OP_RETURN, line);
     disassembleChunk(&chunk, "test chunk");
+    interpret(&chunk);
     freeChunk(&chunk);
+    freeVM();
     
     return 0;
 }

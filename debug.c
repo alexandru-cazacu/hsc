@@ -6,7 +6,7 @@ void disassembleChunk(Chunk* chunk, const char* name) {
     printf("== %s ==\n", name);
     
     for (int offset = 0; offset < chunk->count;) {
-        offset = disassembleIstruction(chunk, offset);
+        offset = disassembleInstruction(chunk, offset);
     }
 }
 
@@ -25,7 +25,7 @@ uint32_t constantInstruction(const char* name, Chunk* chunk, uint32_t offset) {
 }
 
 // Returns new offset
-uint32_t disassembleIstruction(Chunk* chunk, uint32_t offset) {
+uint32_t disassembleInstruction(Chunk* chunk, uint32_t offset) {
     printf("%04d ", offset);
     
     if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
