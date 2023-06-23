@@ -30,13 +30,12 @@ int main() {
     interpret(&chunk);
     freeChunk(&chunk);
     freeVM();
-#endif
     
-    compile("1 + 2;\n"
-            "// A comment\n"
-            "fun test() {\n"
-            "  print();"
-            "}");
+#endif
+    Chunk chunk = {0};
+    compile("vSync = 123\n"
+            "startMaximized = true\n",
+            &chunk);
     
     return 0;
 }
