@@ -14,6 +14,7 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize) {
         return NULL;
     }
     
+    // TODO(alex): Maybe implement some kind of memory arena?
     void* result = realloc(pointer, newSize);
     if (result == NULL) {
         exit(1);

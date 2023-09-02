@@ -7,6 +7,6 @@ set code=%cd%/src
 
 pushd build
 call ..\deps\ctime\ctime -begin hsc.ctime
-cl %opts% %code%/hsc.c -Fehsc.exe
+cl %opts% %code%/main.c -Fehsc.exe
 call ..\deps\ctime\ctime -end hsc.ctime %ERRORLEVEL%
 popd
