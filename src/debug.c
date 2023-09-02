@@ -24,7 +24,8 @@ uint32_t constantInstruction(const char* name, Chunk* chunk, uint32_t offset) {
     return offset + 2;
 }
 
-// Returns new offset
+// Returns the offset of the next instruction (instructions can be made of
+// multiple bytes).
 uint32_t disassembleInstruction(Chunk* chunk, uint32_t offset) {
     printf("%04d ", offset);
     

@@ -1,5 +1,7 @@
 #include "chunk.h"
 #include "debug.h"
+#include "memory.h"
+#include "value.h"
 
 void initChunk(Chunk* chunk) {
     chunk->count = 0;
@@ -27,4 +29,9 @@ void writeChunk(Chunk* chunk, uint8_t byte, uint32_t line) {
     chunk->code[chunk->count] = byte;
     chunk->lines[chunk->count] = line;
     chunk->count++;
+}
+
+size_t addConstant(Chunk* chunk, Value value) {
+    writeValueArray(&chunk->constants, value);
+    return chunk->constants.count - 1;
 }

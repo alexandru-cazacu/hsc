@@ -3,12 +3,6 @@
 #include "chunk.h"
 #include "memory.h"
 
-// Returns the index of where the constant was placed.
-size_t addConstant(Chunk* chunk, Value value) {
-    writeValueArray(&chunk->constants, value);
-    return chunk->constants.count - 1;
-}
-
 void initValueArray(ValueArray* array) {
     array->count = 0;
     array->capacity = 0;
