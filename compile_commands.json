@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "C:/dev/hsc",
+    "arguments": [
+      "C:/Program Files/LLVM/bin/clang.exe",
+      "src/hsc.c",
+      "-ohsc.exe",
+      "-Isrc/"
+    ],
+    "file": "src/hsc.c"
+  }
+]

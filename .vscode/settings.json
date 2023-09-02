@@ -1,0 +1,10 @@
+{
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "search.exclude": {
+    "**/deps": true
+  },
+  // I nagivate using keyboard, no need to waste space.
+  "workbench.editor.wrapTabs": false
+}
