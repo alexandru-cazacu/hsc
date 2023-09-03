@@ -7,12 +7,24 @@
 // Chunk - Sequences of bytecode.
 //
 
+// TODO(alex): Add composite comparison operators for performance. Not these
+// comparisons are implemented with two instructions.
+// a!=b -> !(a==b) implemented with OP_EQUAL+OP_NOT
+// a<=b -> !(a>b)  implemented with OP_GREATER+OP_NOT
+// a>=b -> !(a<b)  implemented with OP_LESS+OP_NOT
 typedef enum {   // bytes
     OP_CONSTANT, // [opcode][constant index]
+    OP_NIL,      // [opcode]
+    OP_TRUE,     // [opcode]
+    OP_FALSE,    // [opcode]
+    OP_EQUAL,    // [opcode]
+    OP_GREATER,  // [opcode]
+    OP_LESS,     // [opcode]
     OP_ADD,      // [opcode]
     OP_SUBTRACT, // [opcode]
     OP_MULTIPLY, // [opcode]
     OP_DIVIDE,   // [opcode]
+    OP_NOT,      // [opcode]
     OP_NEGATE,   // [opcode]
     OP_RETURN,   // [opcode]
 } OpCode;

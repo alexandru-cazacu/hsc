@@ -37,7 +37,7 @@ int scannerAdvance() {
     return gScanner.current[-1];
 }
 
-static char peek() {
+static char scannerPeek() {
     return *gScanner.current;
 }
 
@@ -83,7 +83,7 @@ Token errorToken(const char* message) {
 
 static void skipWhitespace() {
     while (true) {
-        char c = peek();
+        char c = scannerPeek();
         switch (c) {
             case ' ':
             case '\r':
@@ -97,7 +97,7 @@ static void skipWhitespace() {
             case '/': {
                 if (peekNext() == '/') {
                     // Comment goes until the end of the line.
-                    while (peek() != '\n' && !isAtEnd()) {
+                    while (scannerPeek() != '\n' && !isAtEnd()) {
                         scannerAdvance();
                     }
                 } else {
@@ -161,7 +161,7 @@ static TokenType identifierType() {
 }
 
 static Token identifier() {
-    while (isAlpha(peek()) || isDigit(peek())) {
+    while (isAlpha(scannerPeek()) || isDigit(scannerPeek())) {
         scannerAdvance();
     }
     
@@ -169,16 +169,16 @@ static Token identifier() {
 }
 
 static Token scannerNumber() {
-    while (isDigit(peek())) {
+    while (isDigit(scannerPeek())) {
         scannerAdvance();
     }
     
     // Look for a fractional part
-    if (peek() == '.' && isDigit(peekNext())) {
+    if (scannerPeek() == '.' && isDigit(peekNext())) {
         // Consumer the "."
         scannerAdvance();
         
-        while(isDigit(peek())) {
+        while(isDigit(scannerPeek())) {
             scannerAdvance();
         }
     }
@@ -187,8 +187,8 @@ static Token scannerNumber() {
 }
 
 static Token string() {
-    while(peek() != '"' && !isAtEnd()) {
-        if (peek() == '\n') {
+    while(scannerPeek() != '"' && !isAtEnd()) {
+        if (scannerPeek() == '\n') {
             gScanner.line++;
         }
         scannerAdvance();
