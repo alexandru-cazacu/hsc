@@ -2,6 +2,7 @@
 #include "chunk.h"
 #include "common.h"
 #include "debug.h"
+#include "compiler.h"
 #include <stdio.h>
 
 VM gVM;
@@ -75,10 +76,22 @@ static InterpretResult run() {
 #undef READ_BYTE
 }
 
-static InterpretResult interpret(Chunk* chunk) {
-    gVM.chunk = chunk;
+static InterpretResult interpret(const char* source) {
+    Chunk chunk;
+    initChunk(&chunk);
+
+    if (!compile(source, &chunk)) {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    gVM.chunk = &chunk;
     gVM.ip = gVM.chunk->code;
-    return run();
+
+    InterpretResult result = run();
+
+    freeChunk(&chunk);
+    return result;
 }
 
 static void push(Value value) {

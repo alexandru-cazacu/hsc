@@ -2,8 +2,8 @@
 
 typedef enum {
     // Single char
-    TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
     TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
+    TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
     TOKEN_LEFT_SQUARE_BRACE, TOKEN_RIGHT_SQUARE_BRACE,
     TOKEN_COMMA,
     TOKEN_DOT,
@@ -28,9 +28,10 @@ typedef enum {
     TOKEN_PRINT, TOKEN_RETURN, TOKEN_SUPER, TOKEN_THIS,
     TOKEN_TRUE, TOKEN_VAR, TOKEN_WHILE,
     
-    TOKEN_ERROR, TOKEN_EOF,
+    TOKEN_ERROR, // Synthetic "error" token.
+    TOKEN_EOF,
     
-    TOKEN_COUNT
+    TOKEN_COUNT // The number of tokens.
 } TokenType;
 
 typedef struct {

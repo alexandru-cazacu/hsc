@@ -1,3 +1,4 @@
+#include "common.h"
 #include "scanner.h"
 
 typedef struct {
@@ -30,7 +31,8 @@ bool isAtEnd() {
     return *gScanner.current == '\0';
 }
 
-int advance() {
+// Advance and return current character.
+int scannerAdvance() {
     gScanner.current++;
     return gScanner.current[-1];
 }
@@ -47,8 +49,7 @@ static int peekNext() {
     return gScanner.current[1];
 }
 
-
-// Conditional advance
+// Conditional advance.
 bool match(char expected) {
     if (isAtEnd()) {
         return false;
@@ -87,17 +88,17 @@ static void skipWhitespace() {
             case ' ':
             case '\r':
             case '\t': {
-                advance();
+                scannerAdvance();
             } break;
             case '\n': {
                 gScanner.line++;
-                advance();
+                scannerAdvance();
             } break;
             case '/': {
                 if (peekNext() == '/') {
                     // Comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) {
-                        advance();
+                        scannerAdvance();
                     }
                 } else {
                     return;
@@ -120,6 +121,8 @@ static TokenType checkKeyword(int start, int length,
     return TOKEN_IDENTIFIER;
 }
 
+// Identifies reserved keywords using a simple trie.
+// TODO(alex): We could use a "perfect" hash table to make it faster.
 static TokenType identifierType() {
     switch (gScanner.start[0]) {
         case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
@@ -159,24 +162,24 @@ static TokenType identifierType() {
 
 static Token identifier() {
     while (isAlpha(peek()) || isDigit(peek())) {
-        advance();
+        scannerAdvance();
     }
     
     return makeToken(identifierType());
 }
 
-static Token number() {
+static Token scannerNumber() {
     while (isDigit(peek())) {
-        advance();
+        scannerAdvance();
     }
     
     // Look for a fractional part
     if (peek() == '.' && isDigit(peekNext())) {
         // Consumer the "."
-        advance();
+        scannerAdvance();
         
         while(isDigit(peek())) {
-            advance();
+            scannerAdvance();
         }
     }
     
@@ -188,7 +191,7 @@ static Token string() {
         if (peek() == '\n') {
             gScanner.line++;
         }
-        advance();
+        scannerAdvance();
     }
     
     if (isAtEnd()) {
@@ -196,7 +199,7 @@ static Token string() {
     }
     
     // The closing quote.
-    advance();
+    scannerAdvance();
     return makeToken(TOKEN_STRING);
 }
 
@@ -208,13 +211,13 @@ Token scanToken() {
         return makeToken(TOKEN_EOF);
     }
     
-    char c = advance();
+    char c = scannerAdvance();
     
     if (isAlpha(c)) {
         return identifier();
     }
     if (isDigit(c)) {
-        return number();
+        return scannerNumber();
     }
     
     switch (c) {
