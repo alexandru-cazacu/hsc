@@ -16,6 +16,7 @@ typedef struct {
     // [a][_][_] // stackTop = 1
     //     ↑
     Value* stackTop;
+    Obj* objects; // Linked list of allocated objects.
 } VM;
 
 typedef enum {
@@ -23,6 +24,8 @@ typedef enum {
     INTERPRET_COMPILE_ERROR,
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
+extern VM gVM;
 
 static void initVM();
 static void freeVM();

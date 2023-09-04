@@ -17,6 +17,7 @@
 #include "value.c"
 #include "scanner.c"
 #include "compiler.c"
+#include "object.c"
 
 static void repl() {
     char line[1024];
