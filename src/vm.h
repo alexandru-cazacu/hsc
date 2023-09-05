@@ -2,6 +2,7 @@
 
 #include "chunk.h"
 #include "value.h"
+#include "table.h"
 
 // TODO(alex): Check that we don't stack overflow.
 #define STACK_MAX 256
@@ -16,6 +17,7 @@ typedef struct {
     // [a][_][_] // stackTop = 1
     //     ↑
     Value* stackTop;
+    Table strings; // For strings interning.
     Obj* objects; // Linked list of allocated objects.
 } VM;
 

@@ -18,6 +18,7 @@
 #include "scanner.c"
 #include "compiler.c"
 #include "object.c"
+#include "table.c"
 
 static void repl() {
     char line[1024];
