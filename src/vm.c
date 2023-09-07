@@ -31,10 +31,12 @@ static void runtimeError(const char* format, ...) {
 static void initVM() {
     resetStack();
     gVM.objects = NULL;
+    initTable(&gVM.globals);
     initTable(&gVM.strings);
 }
 
 static void freeVM() {
+    freeTable(&gVM.globals);
     freeTable(&gVM.strings);
     freeObjects();
 }
@@ -74,6 +76,7 @@ static void concatenate() {
 static InterpretResult run() {
 #define READ_BYTE() (*gVM.ip++)
 #define READ_CONSTANT() (gVM.chunk->constants.values[READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, op) \
     do { \
       if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -113,6 +116,14 @@ static InterpretResult run() {
             } break;
             case OP_FALSE: {
                 push(BOOL_VAL(false));
+            } break;
+            case OP_POP: {
+                pop();
+            } break;
+            case OP_DEFINE_GLOBAL: {
+                ObjString* name = READ_STRING();
+                tableSet(&gVM.globals, name, peek(0));
+                pop();
             } break;
             case OP_EQUAL: {
                 Value b = pop();
@@ -157,9 +168,12 @@ static InterpretResult run() {
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
             } break;
-            case OP_RETURN: {
+            case OP_PRINT: {
                 printValue(pop());
                 printf("\n");
+            } break;
+            case OP_RETURN: {
+                // Exit interpreter.
                 return INTERPRET_OK;
             }
         }
@@ -167,6 +181,7 @@ static InterpretResult run() {
 
 #undef BINARY_OP
 #undef READ_CONSTANT
+#undef READ_STRING
 #undef READ_BYTE
 }
 

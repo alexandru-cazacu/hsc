@@ -17,6 +17,7 @@ typedef struct {
     // [a][_][_] // stackTop = 1
     //     ↑
     Value* stackTop;
+    Table globals;
     Table strings; // For strings interning.
     Obj* objects; // Linked list of allocated objects.
 } VM;

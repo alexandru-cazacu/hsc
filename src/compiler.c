@@ -105,6 +105,18 @@ static void consume(TokenType type, const char* message) {
     errorAtCurrent(message);
 }
 
+static bool check(TokenType type) {
+    return gParser.current.type == type;
+}
+
+static bool match(TokenType type) {
+    if (!check(type)) {
+        return false;
+    }
+    advance();
+    return true;
+}
+
 // byte - OpCode or operand.
 static void emitByte(uint8_t byte) {
     writeChunk(currentChunk(), byte, gParser.previous.line);
@@ -144,8 +156,25 @@ static void endCompiler() {
 }
 
 static void expression();
+static void statement();
+static void expression();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
+
+// Add identifier in the Chunk's constant table and return it's index.
+static uint8_t identifierConstant(Token* name) {
+    return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+
+static uint8_t parseVariable(const char* errorMessage) {
+    consume(TOKEN_IDENTIFIER, errorMessage);
+    return identifierConstant(&gParser.previous);
+}
+
+// globalIdx - Index in the Chunk's constant table.
+static void defineVariable(uint8_t globalIdx) {
+    emitBytes(OP_DEFINE_GLOBAL, globalIdx);
+}
 
 static void binary() {
     TokenType operatorType = gParser.previous.type;
@@ -290,6 +319,80 @@ static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+static void varDeclaration() {
+    uint8_t global = parseVariable("Expect variable name.");
+
+    if (match(TOKEN_EQUAL)) {
+        expression();
+    } else {
+        // Default initialize to nil. var a; -> var a = nil;
+        emitByte(OP_NIL);
+    }
+    consume(TOKEN_SEMICOLON,
+            "Expect ';' after variable declaration.");
+
+    defineVariable(global);
+}
+
+static void expressionStatement() {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after expression.");
+    emitByte(OP_POP);
+}
+
+static void printStatement() {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+    emitByte(OP_PRINT);
+}
+
+static void synchronize() {
+    gParser.panicMode = false;
+
+    while (gParser.current.type != TOKEN_EOF) {
+        if (gParser.previous.type == TOKEN_SEMICOLON) {
+            return;
+        }
+        switch (gParser.current.type) {
+            case TOKEN_CLASS:
+            case TOKEN_FUN:
+            case TOKEN_VAR:
+            case TOKEN_FOR:
+            case TOKEN_IF:
+            case TOKEN_WHILE:
+            case TOKEN_PRINT:
+            case TOKEN_RETURN:
+            return;
+
+            default:
+            ; // Do nothing.
+        }
+
+        advance();
+    }
+}
+
+static void declaration() {
+    if (match(TOKEN_VAR)) {
+        varDeclaration();
+    } else {
+        statement();
+    }
+
+    // Error synchronization between statements.
+    if (gParser.panicMode) {
+        synchronize();
+    }
+}
+
+static void statement() {
+    if (match(TOKEN_PRINT)) {
+        printStatement();
+    } else {
+        expressionStatement();
+    }
+}
+
 bool compile(const char* source, Chunk* chunk) {
     initScanner(source);
     gCompilingChunk = chunk;
@@ -314,8 +417,11 @@ bool compile(const char* source, Chunk* chunk) {
     gParser.panicMode = false;
 
     advance();
-    expression();
-    consume(TOKEN_EOF, "Expected end of expression.");
+    
+    while(!match(TOKEN_EOF)) {
+        declaration();
+    }
+
     endCompiler();
     return !gParser.hadError;
 }
