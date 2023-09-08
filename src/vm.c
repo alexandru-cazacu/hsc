@@ -120,6 +120,14 @@ static InterpretResult run() {
             case OP_POP: {
                 pop();
             } break;
+            case OP_GET_LOCAL: {
+                uint8_t slot = READ_BYTE();
+                push(gVM.stack[slot]);
+            } break;
+            case OP_SET_LOCAL: {
+                uint8_t slot = READ_BYTE();
+                gVM.stack[slot] = peek(0);
+            } break;
             case OP_GET_GLOBAL: {
                 ObjString* name = READ_STRING();
                 Value value;
