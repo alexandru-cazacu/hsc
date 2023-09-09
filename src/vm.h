@@ -1,15 +1,23 @@
 #pragma once
 
 #include "chunk.h"
+#include "object.h"
 #include "value.h"
 #include "table.h"
 
-// TODO(alex): Check that we don't stack overflow.
-#define STACK_MAX 256
+#define FRAMES_MAX 64
+#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+
+// Ongoing function call.
+typedef struct {
+    ObjFunction* function;
+    uint8_t* ip; // Points to the NEXT instruction about to be executed.
+    Value* slots; // First usable position by this function in the stack.
+} CallFrame;
 
 typedef struct {
-    Chunk* chunk;
-    uint8_t* ip; // Points to the NEXT instruction about to be executed.
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
     Value stack[STACK_MAX];
     // Points ONE element past the element containing the top value on the
     // stack. This way we can indicate that the stack is empty by pointing at

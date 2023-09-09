@@ -1,4 +1,5 @@
 #include "object.h"
+#include "chunk.h"
 #include "common.h"
 #include "memory.h"
 #include "table.h"
@@ -14,6 +15,14 @@ static Obj* allocateObject(size_t size, ObjType type) {
     object->next = gVM.objects;
     gVM.objects = object;
     return object;
+}
+
+ObjFunction* newFunction() {
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    function->arity = 0;
+    function->name = NULL;
+    initChunk(&function->chunk);
+    return function;
 }
 
 static ObjString* allocateString(char* chars, int length, uint32_t hash) {
@@ -62,8 +71,19 @@ ObjString* copyString(const char* chars, int length) {
     return allocateString(heapChars, length, hash);
 }
 
+static void printFunction(ObjFunction* function) {
+    if (function->name == NULL) {
+        printf("<script>");
+        return;
+    }
+    printf("<fn %s>", function->name->chars);
+}
+
 void printObject(Value value) {
     switch (OBJ_TYPE(value)) {
+        case OBJ_FUNCTION: {
+            printFunction(AS_FUNCTION(value));
+        } break;
         case OBJ_STRING: {
             printf("%s", AS_CSTRING(value));
         } break;

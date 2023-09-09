@@ -3,6 +3,7 @@
 #include "common.h"
 #include "debug.h"
 #include "compiler.h"
+#include "object.h"
 #include "table.h"
 #include "value.h"
 #include "memory.h"
@@ -13,6 +14,7 @@ VM gVM;
 
 static void resetStack() {
     gVM.stackTop = gVM.stack;
+    gVM.frameCount = 0;
 }
 
 static void runtimeError(const char* format, ...) {
@@ -22,8 +24,9 @@ static void runtimeError(const char* format, ...) {
     va_end(args);
     fputs("\n", stderr);
 
-    size_t instruction = gVM.ip - gVM.chunk->code - 1;
-    int line = gVM.chunk->lines[instruction];
+    CallFrame* frame = &gVM.frames[gVM.frameCount - 1];
+    size_t instruction = frame->ip - frame->function->chunk.code - 1;
+    int line = frame->function->chunk.lines[instruction];
     fprintf(stderr, "[line %d] in script\n", line);
     resetStack();
 }
@@ -74,10 +77,19 @@ static void concatenate() {
 }
 
 static InterpretResult run() {
-#define READ_BYTE() (*gVM.ip++)
-#define READ_CONSTANT() (gVM.chunk->constants.values[READ_BYTE()])
-#define READ_SHORT() (gVM.ip += 2, (uint16_t)((gVM.ip[-2] << 8) | gVM.ip[-1]))
+    CallFrame* frame = &gVM.frames[gVM.frameCount - 1];
+
+#define READ_BYTE() (*frame->ip++)
+
+#define READ_SHORT() \
+    (frame->ip += 2, \
+    (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+
+#define READ_CONSTANT() \
+    (frame->function->chunk.constants.values[READ_BYTE()])
+
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+
 #define BINARY_OP(valueType, op) \
     do { \
       if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -100,7 +112,8 @@ static InterpretResult run() {
         }
         printf("\n");
         // Prints current instruction.
-        disassembleInstruction(gVM.chunk, (int)(gVM.ip - gVM.chunk->code));
+        disassembleInstruction(&frame->function->chunk,
+                              (int)(frame->ip - frame->function->chunk.code));
 #endif
         
         uint8_t instruction;
@@ -123,11 +136,11 @@ static InterpretResult run() {
             } break;
             case OP_GET_LOCAL: {
                 uint8_t slot = READ_BYTE();
-                push(gVM.stack[slot]);
+                push(frame->slots[slot]);
             } break;
             case OP_SET_LOCAL: {
                 uint8_t slot = READ_BYTE();
-                gVM.stack[slot] = peek(0);
+                frame->slots[slot] = peek(0);
             } break;
             case OP_GET_GLOBAL: {
                 ObjString* name = READ_STRING();
@@ -200,17 +213,17 @@ static InterpretResult run() {
             } break;
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
-                gVM.ip += offset;
+                frame->ip += offset;
             } break;
             case OP_JUMP_IF_FALSE: {
                 uint16_t offset = READ_SHORT();
                 if (isFalsey(peek(0))) {
-                    gVM.ip += offset;
+                    frame->ip += offset;
                 }
             } break;
             case OP_LOOP: {
                 uint16_t offset = READ_SHORT();
-                gVM.ip -= offset;
+                frame->ip -= offset;
             } break;
             case OP_RETURN: {
                 // Exit interpreter.
@@ -227,19 +240,16 @@ static InterpretResult run() {
 }
 
 static InterpretResult interpret(const char* source) {
-    Chunk chunk;
-    initChunk(&chunk);
-
-    if (!compile(source, &chunk)) {
-        freeChunk(&chunk);
+    ObjFunction* function = compile(source);
+    if (function == NULL) {
         return INTERPRET_COMPILE_ERROR;
     }
 
-    gVM.chunk = &chunk;
-    gVM.ip = gVM.chunk->code;
+    push(OBJ_VAL(function));
+    CallFrame* frame = &gVM.frames[gVM.frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.code;
+    frame->slots = gVM.stack;
 
-    InterpretResult result = run();
-
-    freeChunk(&chunk);
-    return result;
+    return run();
 }

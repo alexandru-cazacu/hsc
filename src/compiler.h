@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chunk.h"
+#include "object.h"
 
-// Returns true if the compilation was successful, false otherwise.
-bool compile(const char* source, Chunk* chunk);
+// Returns a compiled ObjFunction, or NULL if an error occurred.
+ObjFunction* compile(const char* source);
