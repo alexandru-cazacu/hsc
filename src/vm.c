@@ -9,8 +9,13 @@
 #include "memory.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 
 VM gVM;
+
+static Value clockNative(int argCount, Value* args) {
+  return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
 
 static void resetStack() {
     gVM.stackTop = gVM.stack;
@@ -24,11 +29,27 @@ static void runtimeError(const char* format, ...) {
     va_end(args);
     fputs("\n", stderr);
 
-    CallFrame* frame = &gVM.frames[gVM.frameCount - 1];
-    size_t instruction = frame->ip - frame->function->chunk.code - 1;
-    int line = frame->function->chunk.lines[instruction];
-    fprintf(stderr, "[line %d] in script\n", line);
+    for (int i = gVM.frameCount - 1; i >= 0; i--) {
+        CallFrame* frame = &gVM.frames[i];
+        ObjFunction* function = frame->function;
+        size_t instruction = frame->ip - function->chunk.code - 1;
+        fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
+        if (function->name == NULL) {
+            fprintf(stderr, "script\n");
+        } else {
+            fprintf(stderr, "%s()\n", function->name->chars);
+        }
+    }
+
     resetStack();
+}
+
+static void defineNative(const char* name, NativeFn function) {
+    push(OBJ_VAL(copyString(name, (int)strlen(name))));
+    push(OBJ_VAL(newNative(function)));
+    tableSet(&gVM.globals, AS_STRING(gVM.stack[0]), gVM.stack[1]);
+    pop();
+    pop();
 }
 
 static void initVM() {
@@ -36,6 +57,8 @@ static void initVM() {
     gVM.objects = NULL;
     initTable(&gVM.globals);
     initTable(&gVM.strings);
+
+    defineNative("clock", clockNative);
 }
 
 static void freeVM() {
@@ -56,6 +79,47 @@ static Value pop() {
 
 static Value peek(int distance) {
     return gVM.stackTop[-1 - distance];
+}
+
+static bool vmCall(ObjFunction* function, int argCount) {
+    if (argCount != function->arity) {
+        runtimeError("Expected %d arguments but got %d.",
+                     function->arity, argCount);
+        return false;
+    }
+
+    if (gVM.frameCount == FRAMES_MAX) {
+        runtimeError("Stack overflow.");
+        return false;
+    }
+
+    CallFrame* frame = &gVM.frames[gVM.frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.code;
+    // -1 to account for stack slot zero used by compiler.
+    frame->slots = gVM.stackTop - argCount - 1;
+    return true;
+}
+
+static bool callValue(Value callee, int argCount) {
+    if (IS_OBJ(callee)) {
+        switch (OBJ_TYPE(callee)) {
+            case OBJ_FUNCTION:
+                return vmCall(AS_FUNCTION(callee), argCount);
+            case OBJ_NATIVE: {
+                NativeFn native = AS_NATIVE(callee);
+                Value result = native(argCount, gVM.stackTop - argCount);
+                gVM.stackTop -= argCount + 1;
+                push(result);
+                return true;
+            }
+            default:
+                break; // Non-callable object type.
+        }
+    }
+
+    runtimeError("Can only call functions and classes.");
+    return false;
 }
 
 static bool isFalsey(Value value) {
@@ -225,10 +289,25 @@ static InterpretResult run() {
                 uint16_t offset = READ_SHORT();
                 frame->ip -= offset;
             } break;
+            case OP_CALL: {
+                int argCount = READ_BYTE();
+                if (!callValue(peek(argCount), argCount)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                frame = &gVM.frames[gVM.frameCount - 1];
+            } break;
             case OP_RETURN: {
-                // Exit interpreter.
-                return INTERPRET_OK;
-            }
+                Value result = pop();
+                gVM.frameCount--;
+                if (gVM.frameCount == 0) {
+                    pop();
+                    return INTERPRET_OK;
+                }
+
+                gVM.stackTop = frame->slots;
+                push(result);
+                frame = &gVM.frames[gVM.frameCount - 1];
+            } break;
         }
     }
 
@@ -246,10 +325,7 @@ static InterpretResult interpret(const char* source) {
     }
 
     push(OBJ_VAL(function));
-    CallFrame* frame = &gVM.frames[gVM.frameCount++];
-    frame->function = function;
-    frame->ip = function->chunk.code;
-    frame->slots = gVM.stack;
+    vmCall(function, 0);
 
     return run();
 }

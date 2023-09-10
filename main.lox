@@ -1,19 +1,10 @@
-var breakfast = "beignets";
-var beverage = "cafe au lait";
-breakfast = "beignets with " + beverage;
-
-var canPrint = true;
-
-if (canPrint) {
-    print breakfast;
-} else {
-    print "Can't print.";
+fun fib(n) {
+  if (n < 2) return n;
+  return fib(n - 2) + fib(n - 1);
 }
 
-for (var i = 0; i < 3; i = i + 1) {
-    print i;
-}
-
-for (var i = 0; i < 3; i = i + 1) {
-    // Infinite loop. We don't have break yet.
-}
+var start = clock();
+print fib(28);
+print fib(29);
+print fib(30);
+print clock() - start;

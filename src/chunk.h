@@ -36,6 +36,7 @@ typedef enum {        // bytes
     OP_JUMP,          // [opcode][offset]+[offset]
     OP_JUMP_IF_FALSE, // [opcode][offset]+[offset]
     OP_LOOP,          // [opcode][offset]+[offset]
+    OP_CALL,          // [opcode][arg count]
     OP_RETURN,        // [opcode]
 } OpCode;
 
