@@ -10,7 +10,7 @@
 
 // Ongoing function call.
 typedef struct {
-    ObjFunction* function;
+    ObjClosure* closure;
     uint8_t* ip; // Points to the NEXT instruction about to be executed.
     Value* slots; // First usable position by this function in the stack.
 } CallFrame;
@@ -27,6 +27,7 @@ typedef struct {
     Value* stackTop;
     Table globals;
     Table strings; // For strings interning.
+    ObjUpvalue* openUpvalues;
     Obj* objects; // Linked list of allocated objects.
 } VM;
 
