@@ -27,6 +27,7 @@ typedef enum {
 
 struct Obj {
     ObjType type;
+    bool isMarked; // GC.
     struct Obj* next; // Linked list of allocated objects.
 };
 

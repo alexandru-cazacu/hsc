@@ -28,3 +28,5 @@ void tableAddAll(Table* from, Table* to);
 // check but we need to do interning first to make it work.
 ObjString* tableFindString(Table* table, const char* chars, int length,
                            uint32_t hash);
+void tableRemoveWhite(Table* table);
+void markTable(Table* table);
