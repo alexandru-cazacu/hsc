@@ -26,6 +26,8 @@ typedef enum {        // bytes
     OP_GET_UPVALUE,   // [opcode]
     OP_SET_UPVALUE,   // [opcode]
     OP_EQUAL,         // [opcode]
+    OP_GET_PROPERTY,  // [opcode]
+    OP_SET_PROPERTY,  // [opcode]
     OP_GREATER,       // [opcode]
     OP_LESS,          // [opcode]
     OP_ADD,           // [opcode]
@@ -42,6 +44,7 @@ typedef enum {        // bytes
     OP_CLOSURE,       // [opcode][isLocal][local slot / upvalue index]
     OP_CLOSE_UPVALUE, // [opcode]
     OP_RETURN,        // [opcode]
+    OP_CLASS,         // [opcode]
 } OpCode;
 
 typedef struct {
