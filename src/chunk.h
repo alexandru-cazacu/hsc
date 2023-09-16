@@ -45,6 +45,7 @@ typedef enum {        // bytes
     OP_CLOSE_UPVALUE, // [opcode]
     OP_RETURN,        // [opcode]
     OP_CLASS,         // [opcode]
+    OP_METHOD,        // [opcode]
 } OpCode;
 
 typedef struct {
