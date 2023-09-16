@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NAN_BOXING
 // Enables dumping a Chunk.
 // #define DEBUG_PRINT_CODE
 // Enables printing disassembled instructions before executing them.
