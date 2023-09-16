@@ -41,6 +41,7 @@ typedef enum {        // bytes
     OP_JUMP_IF_FALSE, // [opcode][offset]+[offset]
     OP_LOOP,          // [opcode][offset]+[offset]
     OP_CALL,          // [opcode][arg count]
+    OP_INVOKE,        // [opcode][constant index][arg count]
     OP_CLOSURE,       // [opcode][isLocal][local slot / upvalue index]
     OP_CLOSE_UPVALUE, // [opcode]
     OP_RETURN,        // [opcode]
