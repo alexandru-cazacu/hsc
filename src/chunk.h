@@ -25,6 +25,7 @@ typedef enum {        // bytes
     OP_SET_GLOBAL,    // [opcode]
     OP_GET_UPVALUE,   // [opcode]
     OP_SET_UPVALUE,   // [opcode]
+    OP_GET_SUPER,     // [opcode]
     OP_EQUAL,         // [opcode]
     OP_GET_PROPERTY,  // [opcode]
     OP_SET_PROPERTY,  // [opcode]
@@ -42,10 +43,12 @@ typedef enum {        // bytes
     OP_LOOP,          // [opcode][offset]+[offset]
     OP_CALL,          // [opcode][arg count]
     OP_INVOKE,        // [opcode][constant index][arg count]
+    OP_SUPER_INVOKE,  // [opcode][constant index][arg count]
     OP_CLOSURE,       // [opcode][isLocal][local slot / upvalue index]
     OP_CLOSE_UPVALUE, // [opcode]
     OP_RETURN,        // [opcode]
     OP_CLASS,         // [opcode]
+    OP_INHERIT,       // [opcode]
     OP_METHOD,        // [opcode]
 } OpCode;
 
